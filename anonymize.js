@@ -25,7 +25,7 @@ function anonymize(input,output,id) {
 
 function createTransforms(id) {
 	var messageTransform = function(message) {
-		if(message.type == 8) {
+		if(message.type == 8) { //stringtables message
 			for (const table of message.tables) {
 				if(table.name == 'userinfo') {
 					for (const entry of table.entries) {
@@ -43,6 +43,10 @@ function createTransforms(id) {
 		return message;
 	};
 	var packetTransform = function(packet) {
+		//Replace STV name with demo id
+		if(packet.packetType == 'serverInfo') {
+			packet.serverName = id;
+		}
 		//Replace names of users who join later
 		if(packet.packetType == 'updateStringTable') {
 			if(packet.tableName == 'userinfo') {
@@ -140,5 +144,3 @@ function byteLength(str) {
   }
   return s;
 }
-
-anonymize('test.dem','output.dem','1');
