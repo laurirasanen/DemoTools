@@ -1,9 +1,39 @@
 var Transformer = require('tf2-demo').Transformer;
 var fs = require('fs');
+var path = require('path');
 
 var BitStream = require('bit-buffer').BitStream;
 
-function anonymize(input,output,id) {
+function anonymizeDemos(inputDir,outputDir,prefix) {
+	fs.readdir(inputDir, function (err, files) {
+		files.sort(); //sort files alphabetically so stv and pov demos are next to each other
+		var IDs = [];
+		//generate random IDs
+		for(var i = 0; i < (files.length / 2); i++) {
+			var rand = Math.floor(Math.random() * 10000);
+			while(IDs.includes(rand)) {
+				rand = Math.floor(Math.random() * 10000);
+			}
+			//pov and stv have same id
+			IDs.push(rand);
+			IDs.push(rand);
+		}
+		var demo = 0;
+		files.forEach(function(file) {
+			var spliced = file.split("_");
+			var suffix = "_" + spliced[spliced.length - 2] + "_" + spliced[spliced.length-1].toLowerCase(); //preserve demo type and tick
+			var filePath = path.join(inputDir,file);
+			var outputName = prefix;
+			var fileName = outputName + IDs[demo] + suffix;
+			demo++;
+			var outputPath = path.join(outputDir,fileName);
+			console.log(filePath,outputPath)
+			anonymizeDemo(filePath,outputPath,outputName);
+		});
+	});
+}
+
+function anonymizeDemo(input,output,id) {
 	fs.readFile(input, function (err, data) {
 		if (err) throw err;
 
@@ -144,3 +174,5 @@ function byteLength(str) {
   }
   return s;
 }
+
+anonymizeDemos("input_demos","output_demos","soldier");
