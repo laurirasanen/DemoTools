@@ -54,7 +54,7 @@ function getModels(path) {
 		for (const line of lines) {
 			if (line != "") {
 				model = line.split(' ');
-				models[model[0]] = model[1];
+				models[model[0].trim()] = model[1].trim();
 			}
 		}
 	});

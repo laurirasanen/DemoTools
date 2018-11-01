@@ -10,9 +10,9 @@ function anonymizeDemos(inputDir,outputDir,prefix) {
 		var IDs = [];
 		//generate random IDs
 		for(var i = 0; i < (files.length / 2); i++) {
-			var rand = Math.floor(Math.random() * 10000);
+			var rand = Math.floor(Math.random() * 9000) + 1000;
 			while(IDs.includes(rand)) {
-				rand = Math.floor(Math.random() * 10000);
+				rand = Math.floor(Math.random() * 9000) + 1000;
 			}
 			//pov and stv have same id
 			IDs.push(rand);
@@ -23,8 +23,8 @@ function anonymizeDemos(inputDir,outputDir,prefix) {
 			var spliced = file.split("_");
 			var suffix = "_" + spliced[spliced.length - 2] + "_" + spliced[spliced.length-1].toLowerCase(); //preserve demo type and tick
 			var filePath = path.join(inputDir,file);
-			var outputName = prefix;
-			var fileName = outputName + IDs[demo] + suffix;
+			var outputName = prefix + IDs[demo];
+			var fileName = outputName + suffix;
 			demo++;
 			var outputPath = path.join(outputDir,fileName);
 			console.log(filePath,outputPath)
@@ -117,7 +117,6 @@ function createTransforms(id) {
 				packet.event.values.oldname = '';
 				packet.event.values.newname = '';
 			}
-			return null;
 		}
 		if(packet.packetType == 'packetEntities') {
 			var newEntities = [];
@@ -175,4 +174,4 @@ function byteLength(str) {
   return s;
 }
 
-anonymizeDemos("input_demos","output_demos","soldier");
+//anonymizeDemos("input_demos","output_demos","test");
