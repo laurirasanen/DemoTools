@@ -58,13 +58,12 @@ function getModels(path, cb) {
 
 function createTransforms(models) {
 	var messageTransform = function(message) {
-		if(message.type == 8) { //stringtables message
+		if (message.type == 8) { //stringtables message
 			for (var table of message.tables) {
 				if(table.name == 'modelprecache') {
 					for (var entry of table.entries) {
 						if (entry.text in models) {
 							entry.text = models[entry.text];
-							//console.log(entry.text);
 						}
 					}
 				}
@@ -73,13 +72,16 @@ function createTransforms(models) {
 		return message;
 	};
 	var packetTransform = function(packet) {
+		if (packet.packetType == 'updateStringTable') {
+			if (packet.tableName == 'modelprecache') {
+				for(var entry of packet.entries) {
+					if (typeof entry !== 'undefined' && entry.text in models) {
+						entry.text = models[entry.text];
+					}
+				}
+			}
+		}
 		return packet;
 	};
 	return [packetTransform,messageTransform];
 }
-
-fixModels('speed2.dem', 'speed2_f.dem', (err) => {
-	if(err) console.log(err);
-});
-
-module.exports.fixModels = fixModels;
