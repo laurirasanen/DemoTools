@@ -85,3 +85,5 @@ function createTransforms(models) {
 	};
 	return [packetTransform,messageTransform];
 }
+
+module.exports.fixModels = fixModels;
