@@ -1,26 +1,58 @@
 var Transformer = require('tf2-demo').Transformer;
+var BitStream = require('bit-buffer').BitStream;
 var fs = require('fs');
 var path = require('path');
 
-var BitStream = require('bit-buffer').BitStream;
-
-function fixModels(input, output, changed_models) {
+function fixModels(input, output, cb) {
+	if (!cb || typeof (cb) !== 'function')
+        throw ('callback is not a function');
+	
 	fs.readFile(input, function (err, data) {
-		if (err) throw err;
+		if (err) return cb(err);
 
 		var outputStream = new BitStream(Buffer.alloc(data.length*2)); //output demo is larger than input demo
 		var inputStream = new BitStream(data);
 
 		transformer = new Transformer(inputStream,outputStream);
 
-		transforms = createTransforms(changed_models);
+		// relative path from TempusTV
+		getModels('../DemoTools/itemdata/changed_models.txt', (err, models) => {
+			if(err) return cb(err);
+			
+			transforms = createTransforms(models);
 
-		transformer.transform(transforms[0],transforms[1]);
+			transformer.transform(transforms[0],transforms[1]);
+			
+			// unlink old demo to save disk space
+			fs.unlink(input, (err) => {
+				if(err) return cb(err);
+				
+				fs.writeFile(output,outputStream.buffer.slice(0, outputStream.index / 8 + 1),function(err) {
+				if (err) return cb(err);
+				//console.log("Demo modified");
+				return cb();
+				});
+			});
 
-		fs.writeFile(output,outputStream.buffer.slice(0, outputStream.index / 8 + 1),function(err) {
-			if (err) throw err;
-			console.log("Demo modified");
-		});
+		});	
+	});
+}
+
+function getModels(path, cb) {
+	if (!cb || typeof (cb) !== 'function')
+        throw ('callback is not a function');
+	
+	var models = [];
+	fs.readFile(path, 'utf8', function (err, data) {
+		if (err) return cb(err, null);
+		lines = data.split('\n');
+		for (const line of lines) {
+			if (line != "") {
+				model = line.split(' ');
+				models[model[0].trim()] = model[1].trim();
+			}
+		}
+		return cb(null, models);
 	});
 }
 
@@ -32,7 +64,7 @@ function createTransforms(models) {
 					for (var entry of table.entries) {
 						if (entry.text in models) {
 							entry.text = models[entry.text];
-							console.log(entry.text);
+							//console.log(entry.text);
 						}
 					}
 				}
@@ -46,20 +78,8 @@ function createTransforms(models) {
 	return [packetTransform,messageTransform];
 }
 
-function getModels(path) {
-	var models = [];
-	fs.readFile(path, 'utf8', function (err, data) {
-		if (err) throw err;
-		lines = data.split('\n');
-		for (const line of lines) {
-			if (line != "") {
-				model = line.split(' ');
-				models[model[0].trim()] = model[1].trim();
-			}
-		}
-	});
-	return models;
-}
+fixModels('speed2.dem', 'speed2_f.dem', (err) => {
+	if(err) console.log(err);
+});
 
-models = getModels('itemdata/changed_models.txt');
-fixModels("original.dem", "original_fixed.dem", models);
+module.exports.fixModels = fixModels;
