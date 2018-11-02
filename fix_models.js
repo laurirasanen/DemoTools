@@ -32,7 +32,6 @@ function createTransforms(models) {
 					for (var entry of table.entries) {
 						if (entry.text in models) {
 							entry.text = models[entry.text];
-							console.log(entry.text);
 						}
 					}
 				}
@@ -52,7 +51,7 @@ function getModels(path) {
 		if (err) throw err;
 		lines = data.split('\n');
 		for (const line of lines) {
-			if (line != "") {
+			if (line.trim() != "") {
 				model = line.split(' ');
 				models[model[0].trim()] = model[1].trim();
 			}
@@ -62,4 +61,4 @@ function getModels(path) {
 }
 
 models = getModels('itemdata/changed_models.txt');
-fixModels("original.dem", "original_fixed.dem", models);
+//fixModels("sor.dem", "sor_fixed.dem", models);
